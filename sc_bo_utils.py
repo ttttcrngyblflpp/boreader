@@ -1,46 +1,19 @@
 from datetime import time, timedelta
 import re
 
-def time_difference(old_time, new_time):
-    old_delta = timedelta(hours=0, minutes=old_time.minute, seconds=old_time.second)
-    new_delta = timedelta(hours=0, minutes=new_time.minute, seconds=new_time.second)
-    return new_delta - old_delta
-
-def generate_timer_duration(clock_timestamp, delay, scaling):
-    minute = int(clock_timestamp.split(":")[0])
-    second = int(clock_timestamp.split(":")[1])
-    new_time = time(minute = minute, second = second)
-
-    old_time = time(minute = 0, second = 0) 
-
-    return (time_difference(old_time, new_time).seconds * scaling) + delay
-
-def generate_reminder_line(clock_timestamp, scaling, supply, actions):
-    minute = int(clock_timestamp.split(":")[0])
-    second = int(clock_timestamp.split(":")[1])
-    new_time = time(minute = minute, second = second)
-
-    old_time = time(minute = 0, second = 0)
-    new_time = timedelta(seconds = (time_difference(old_time, new_time).seconds * scaling))
-
-    minutes = int(new_time.seconds / 60)
-    seconds = new_time.seconds % 60
-    return "({}:{}) {}: {}".format(str(minutes).zfill(2), str(seconds).zfill(2), supply, actions)
-
-
 def to_shorthand(text):
     final_text = text.lower()
     
     shorthand = {
         # Terran
         "supply depot": "depot",
-        "barracks": "rax",
-        "command center": "CC",
+        #"barracks": "rax",
+        #"command center": "CC",
         "engineering bay": "E bay",
         "planetary fortress": "planetary",
         "missile turret": "turret",
-        "siege tank": "tank",
-        "widow mine": "mine",
+        #"siege tank": "tank",
+        #"widow mine": "mine",
         "orbital command": "orbital",
         "hyperflight rotors": "banshee speed",
         "rapid reignition system": "medivac speed",
@@ -49,10 +22,10 @@ def to_shorthand(text):
         "cloaking field": "banshee cloak",
         "personal cloaking": "ghost cloak",
         "weapon refit": "yamato",
-        "stimpack": "stim",
+        #"stimpack": "stim",
         "infernal pre-igniter": "blue flame",
-        "neosteel armor": "building armor",
-        "hi-sec auto tracking": "building range",
+        #"neosteel armor": "building armor",
+        #"hi-sec auto tracking": "building range",
         "terran infantry armor level 1": "+1 infantry armor",
         "terran infantry weapons level 1": "+1 infantry attack",
         "terran infantry armor level 2": "+2 infantry armor",
@@ -62,6 +35,12 @@ def to_shorthand(text):
         "terran ship weapons level 1": "+1 air attack",
         "terran ship weapons level 2": "+2 air attack",
         "terran ship weapons level 3": "+3 air attack",
+        "terran vehicle weapons level 1": "+1 mek attack",
+        "terran vehicle weapons level 2": "+2 mek attack",
+        "terran vehicle weapons level 3": "+3 mek attack",
+        "terran vehicle and ship armor level 1": "+1 mek armor",
+        "terran vehicle and ship armor level 2": "+2 mek armor",
+        "terran vehicle and ship armor level 3": "+3 mek armor",
 
         
         # Zerg
@@ -104,11 +83,3 @@ def to_shorthand(text):
             final_text = final_text.replace(word, shorthand[word])
     
     return final_text
-
-def cleanup_row(row):
-    # Remove leading and trailing spaces
-    row = row.strip()
-
-    # Replace all instances of two or more spaces with a comma
-    row = re.sub(r'\s{2,}', ',', row)
-    return row
