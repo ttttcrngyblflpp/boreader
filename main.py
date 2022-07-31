@@ -20,13 +20,13 @@ def perform_action(printed_statement, spoken_text):
 
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
-engine.setProperty('voice', 'english+m3')
-engine.setProperty('rate', 225)
+engine.setProperty('voice', 'english+f4')
+engine.setProperty('rate', 200)
 
 with open(args.build, 'r') as build_order:
     event_loop = asyncio.new_event_loop()
     starttime = event_loop.time()
-    actual_start = starttime + 5
+    actual_start = starttime + 6
 
     for i in range(0, 5):
         event_loop.call_at(starttime + i, perform_action, 5-i, 5-i)
@@ -44,6 +44,6 @@ with open(args.build, 'r') as build_order:
 
         clock = datetime.timedelta(minutes=int(row[0].split(":")[0]), seconds=int(row[0].split(":")[1]))
         if clock >= fast_forward:
-            event_loop.call_at(actual_start + (clock.total_seconds() - fast_forward.total_seconds()) * 1.02, perform_action, row, row[1])
+            event_loop.call_at(actual_start + (clock.total_seconds() - fast_forward.total_seconds()) * 1.02, perform_action, row, actions)
 
     event_loop.run_forever()
