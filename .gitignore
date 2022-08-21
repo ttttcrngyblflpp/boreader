@@ -1,2 +1,4 @@
 __pycache__
 builds/
+build/
+boreader.egg-info/

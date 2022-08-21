@@ -1,5 +1,12 @@
-from datetime import time, timedelta
+#!env python
+import argparse
+import datetime
+import sys
+import os.path
+import pyttsx3
+import asyncio
 import re
+import configparser
 
 def to_shorthand(text):
     final_text = text.lower()
@@ -83,3 +90,55 @@ def to_shorthand(text):
             final_text = final_text.replace(word, shorthand[word])
     
     return final_text
+
+parser = argparse.ArgumentParser(description="Read out a SC2 build order.")
+parser.add_argument('build', type=str, help='filename of the build to read in the builds folder')
+parser.add_argument('-p', action='store_true', help='when in practice mode, countdown is set to 5 and scaling to 1.02')
+parser.add_argument('--scaling', type=float, default=1., help='speed scaling factor')
+parser.add_argument('--shorthand', type=bool, default=True, help='whether to use shorthand names for units and buildings')
+parser.add_argument('--time', type=str, default="0:00", help='timestamp to forward to in-game')
+args = parser.parse_args()
+
+def perform_action(printed_statement, spoken_text):
+    print(printed_statement)
+    engine.say(spoken_text)
+    engine.runAndWait()
+
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+engine.setProperty('voice', 'english+f4')
+engine.setProperty('rate', 200)
+
+if not os.path.isfile(args.build):
+    args.build = "/home/tone/sc2/builds/" + args.build
+
+with open(args.build, 'r') as build_order:
+    countdown = 5 if args.p else 3;
+    scaling = 1.
+    if args.scaling != 1.:
+        scaling = 1/args.scaling
+    elif args.p:
+        scaling = 1.02
+    event_loop = asyncio.new_event_loop()
+    starttime = event_loop.time()
+    actual_start = starttime + countdown + 1
+
+    for i in range(0, countdown):
+        event_loop.call_at(starttime + i, perform_action, countdown-i, countdown-i)
+
+    fast_forward = datetime.timedelta(minutes=int(args.time.split(":")[0]), seconds=int(args.time.split(":")[1]))
+    for row in build_order.read().splitlines():
+        if len(row) == 0 or row[0] == '#':
+            continue
+        # Formatting
+        row = row.split(None, 1)
+        actions = row[1]
+
+        if args.shorthand:
+            actions = to_shorthand(actions)
+
+        clock = datetime.timedelta(minutes=int(row[0].split(":")[0]), seconds=int(row[0].split(":")[1]))
+        if clock >= fast_forward:
+            event_loop.call_at(actual_start + (clock.total_seconds() - fast_forward.total_seconds()) * scaling, perform_action, row, actions)
+
+    event_loop.run_forever()
