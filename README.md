@@ -2,7 +2,8 @@
 
 This project takes in a build order and reads it using text-to-speech based
 on the timestamps included in the build order itself. Each line of the build
-order must be a timestamp in the form `M?M:SS`.
+order must be a timestamp in the form `M?M:SS` and some text describing the
+build order item, separated by any amount of whitespace.
 
 This does not work without timestamps.
 

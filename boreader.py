@@ -1,4 +1,4 @@
-#!env python
+#!env python3
 import argparse
 import datetime
 import sys
@@ -93,8 +93,9 @@ def to_shorthand(text):
 
 parser = argparse.ArgumentParser(description="Read out a SC2 build order.")
 parser.add_argument('build', type=str, help='filename of the build to read in the builds folder')
-parser.add_argument('-p', action='store_true', help='when in practice mode, countdown is set to 5 and scaling to 1.02')
+parser.add_argument('--real', action='store_true', help='if true, dont apply the 1.02 scaling factor')
 parser.add_argument('--scaling', type=float, default=1., help='speed scaling factor')
+parser.add_argument('--speed', type=str, default='fastest', help='game speed')
 parser.add_argument('--shorthand', type=bool, default=True, help='whether to use shorthand names for units and buildings')
 parser.add_argument('--time', type=str, default="0:00", help='timestamp to forward to in-game')
 args = parser.parse_args()
@@ -113,12 +114,25 @@ if not os.path.isfile(args.build):
     args.build = "/home/tone/sc2/builds/" + args.build
 
 with open(args.build, 'r') as build_order:
-    countdown = 5 if args.p else 3;
+    countdown = 3 if args.real else 5;
+
     scaling = 1.
+    match args.speed:
+        case 'faster':
+            scaling = 1.4 / 1.2
+        case 'normal':
+            scaling = 1.4
+        case 'slow':
+            scaling = 1.4 / 0.8
+        case 'slower':
+            scaling = 1.4 / 0.6
+        case _:
+            pass
     if args.scaling != 1.:
         scaling = 1/args.scaling
-    elif args.p:
-        scaling = 1.02
+    if not args.real:
+        scaling *= 1.02
+
     event_loop = asyncio.new_event_loop()
     starttime = event_loop.time()
     actual_start = starttime + countdown + 1
